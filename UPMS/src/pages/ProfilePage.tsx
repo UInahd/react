@@ -1,7 +1,14 @@
 import NavBar from '../components/NavBar';
+import { useAuth } from '../contexts/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 
 export default function Profile() {
+  const { currentUser, users } = useAuth();
+  const profile = users.find((user) => user.username === currentUser) ?? {
+    username: 'Unknown',
+    email: 'Not available',
+    mobile: 'Not available',
+  };
   return (
     <div className="min-h-screen bg-background">
       <NavBar />
@@ -15,20 +22,20 @@ export default function Profile() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Full name</label>
-                  <p className="text-sm font-medium">John Doe</p>
+                  <label className="text-sm font-medium text-muted-foreground">Username</label>
+                  <p className="text-sm font-medium">{profile.username}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Email address</label>
-                  <p className="text-sm font-medium">john.doe@example.com</p>
+                  <p className="text-sm font-medium">{profile.email}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Mobile</label>
+                  <p className="text-sm font-medium">{profile.mobile}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Role</label>
                   <p className="text-sm font-medium">Administrator</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Status</label>
-                  <p className="text-sm font-medium">Active</p>
                 </div>
               </div>
             </CardContent>

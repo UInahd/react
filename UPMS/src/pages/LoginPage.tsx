@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/useAuth';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
@@ -17,7 +17,7 @@ export default function Login() {
     if (login(username, password)) {
       navigate('/dashboard');
     } else {
-      setError('Invalid credentials');
+      setError('Invalid credentials. Please register or try again.');
     }
   };
 
@@ -25,9 +25,9 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl text-center">Sign in</CardTitle>
+          <CardTitle className="text-2xl text-center">Bread Shop Admin Sign in</CardTitle>
           <CardDescription className="text-center">
-            Enter your credentials to access your account
+            Use your admin credentials to manage inventory and sales.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -59,12 +59,15 @@ export default function Login() {
               />
             </div>
             {error && <p className="text-sm text-red-600">{error}</p>}
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full" size="sm">
               Sign in
             </Button>
           </form>
           <p className="mt-4 text-center text-sm text-muted-foreground">
-            Demo: username: <code className="bg-muted px-1 py-0.5 rounded">admin</code>, password: <code className="bg-muted px-1 py-0.5 rounded">password</code>
+            New admin? <Link to="/register" className="text-primary underline">Register here</Link>.
+          </p>
+          <p className="mt-4 text-center text-sm text-muted-foreground">
+            Demo admin: <code className="bg-muted px-1 py-0.5 rounded">admin</code> / <code className="bg-muted px-1 py-0.5 rounded">password</code>
           </p>
         </CardContent>
       </Card>

@@ -1,32 +1,46 @@
-import React, { createContext, useContext, useState, type ReactNode } from 'react';
+import { useEffect, useState } from 'react';
+import { AuthContext } from './AuthContextShared';
+import type { AuthUser, AuthProviderProps } from './AuthContextShared';
 
-interface AuthContextType {
-  isAuthenticated: boolean;
-  login: (username: string, password: string) => boolean;
-  logout: () => void;
-}
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
-
-interface AuthProviderProps {
-  children: ReactNode;
-}
+const defaultUsers: AuthUser[] = [
+  { username: 'admin', password: 'password', email: 'admin@breadshop.com', mobile: '+1234567890' },
+];
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [users, setUsers] = useState<AuthUser[]>(() => {
+    const stored = localStorage.getItem('upms-users');
+    if (stored) {
+      try {
+        return JSON.parse(stored) as AuthUser[];
+      } catch {
+        return defaultUsers;
+      }
+    }
+    return defaultUsers;
+  });
+  const [currentUser, setCurrentUser] = useState<string | null>(() => {
+    return localStorage.getItem('upms-current-user') || null;
+  });
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    const storedAuth = localStorage.getItem('upms-is-authenticated');
+    return storedAuth === 'true' && Boolean(localStorage.getItem('upms-current-user'));
+  });
+
+  useEffect(() => {
+    localStorage.setItem('upms-users', JSON.stringify(users));
+  }, [users]);
+
+  useEffect(() => {
+    localStorage.setItem('upms-is-authenticated', isAuthenticated ? 'true' : 'false');
+    localStorage.setItem('upms-current-user', currentUser || '');
+  }, [isAuthenticated, currentUser]);
 
   const login = (username: string, password: string) => {
-    // Simple mock authentication - in real app, call API
-    if (username === 'admin' && password === 'password') {
+    const user = users.find((item) => item.username === username && item.password === password);
+    if (user) {
       setIsAuthenticated(true);
+      setCurrentUser(user.username);
       return true;
     }
     return false;
@@ -34,10 +48,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = () => {
     setIsAuthenticated(false);
+    setCurrentUser(null);
+  };
+
+  const register = (username: string, password: string, email: string, mobile: string) => {
+    const exists = users.some((item) => item.username === username);
+    if (exists) {
+      return false;
+    }
+
+    setUsers((prevUsers) => [...prevUsers, { username, password, email, mobile }]);
+    setIsAuthenticated(true);
+    setCurrentUser(username);
+    return true;
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, currentUser, users, login, logout, register }}>
       {children}
     </AuthContext.Provider>
   );
