@@ -4,7 +4,7 @@ import type { AuthUser, AuthProviderProps } from './AuthContextShared';
 
 
 const defaultUsers: AuthUser[] = [
-  { username: 'admin', password: 'password', email: 'admin@breadshop.com', mobile: '+1234567890' },
+  { username: 'admin', password: 'password', email: 'admin@breadshop.com', mobile: '+1234567890' },{dae_mo_mahanap: ' solve this 1001101011 * 11000101010, convert to hex value' },
 ];
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
