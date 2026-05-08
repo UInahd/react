@@ -4,7 +4,17 @@ import type { AuthUser, AuthProviderProps } from './AuthContextShared';
 
 
 const defaultUsers: AuthUser[] = [
-  { username: 'admin', password: 'password', email: 'admin@breadshop.com', mobile: '+1234567890' },
+  {
+    username: 'admin',
+    firstName: 'Admin',
+    middleName: '',
+    lastName: 'User',
+    age: 30,
+    gender: 'Other',
+    password: 'password',
+    email: 'admin@breadshop.com',
+    mobile: '+1234567890',
+  },
 ];
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
@@ -36,8 +46,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.setItem('upms-current-user', currentUser || '');
   }, [isAuthenticated, currentUser]);
 
-  const login = (username: string, password: string) => {
-    const user = users.find((item) => item.username === username && item.password === password);
+  const login = (email: string, password: string) => {
+    const user = users.find((item) => item.email === email && item.password === password);
     if (user) {
       setIsAuthenticated(true);
       setCurrentUser(user.username);
@@ -51,20 +61,69 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setCurrentUser(null);
   };
 
-  const register = (username: string, password: string, email: string, mobile: string) => {
-    const exists = users.some((item) => item.username === username);
-    if (exists) {
+  const generateUsername = (firstName: string, middleName: string, lastName: string) => {
+    const normalize = (value: string) => value.trim().toLowerCase().replace(/[^a-z]/g, '');
+    let baseUsername = `${normalize(firstName)}.${normalize(lastName)}`;
+    if (middleName) {
+      baseUsername = `${normalize(firstName)}.${normalize(middleName)}.${normalize(lastName)}`;
+    }
+    let username = baseUsername || `user${Date.now()}`;
+    let suffix = 1;
+
+    while (users.some((item) => item.username === username)) {
+      username = `${baseUsername}-${suffix}`;
+      suffix += 1;
+    }
+    return username;
+  };
+
+  const register = (
+    firstName: string,
+    middleName: string,
+    lastName: string,
+    age: string,
+    gender: string,
+    password: string,
+    email: string,
+    mobile: string
+  ) => {
+    if (users.some((item) => item.email === email)) {
       return false;
     }
 
-    setUsers((prevUsers) => [...prevUsers, { username, password, email, mobile }]);
+    const username = generateUsername(firstName, middleName, lastName);
+    const numericAge = Number(age);
+
+    setUsers((prevUsers) => [
+      ...prevUsers,
+      {
+        username,
+        firstName,
+        middleName,
+        lastName,
+        age: Number.isNaN(numericAge) ? 0 : numericAge,
+        gender,
+        password,
+        email,
+        mobile,
+      },
+    ]);
     setIsAuthenticated(true);
     setCurrentUser(username);
     return true;
   };
 
+  const updateProfile = (username: string, email: string, mobile: string) => {
+    setUsers((prevUsers) =>
+      prevUsers.map((user) =>
+        user.username === username ? { ...user, email, mobile } : user
+      )
+    );
+    return true;
+  };
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, currentUser, users, login, logout, register }}>
+    <AuthContext.Provider value={{ isAuthenticated, currentUser, users, login, logout, register, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );
